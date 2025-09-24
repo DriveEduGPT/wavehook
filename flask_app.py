@@ -10,7 +10,7 @@ def home():
 def webhook():
     # Webhook handling logic will go here
     print(request.json)
-    return 'OK', 200
+    return request.json
 
 if __name__ == '__main__':
     app.run(debug=True)
