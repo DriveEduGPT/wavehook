@@ -1,6 +1,8 @@
 import os
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO, emit
+import eventlet
+eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key_if_not_set') # Change this to a strong secret key
