@@ -20,7 +20,8 @@ def webhook():
         '34.212.75.30',
         '54.218.53.128',
         '52.32.178.7',
-        '223.19.58.131'
+        '223.19.58.131',
+        'YOUR_WEBHOOK_SOURCE_IP' # <-- 將此替換為你的 webhook 來源 IP 地址
     ]
     client_ip = request.remote_addr
     if client_ip not in allowed_ips:
