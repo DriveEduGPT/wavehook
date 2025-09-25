@@ -15,18 +15,19 @@ def home():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    allowed_ips = [
-        '52.89.214.238',
-        '34.212.75.30',
-        '54.218.53.128',
-        '52.32.178.7',
-        '223.19.58.131',
-        'YOUR_WEBHOOK_SOURCE_IP' # <-- 將此替換為你的 webhook 來源 IP 地址
-    ]
-    client_ip = request.remote_addr
-    if client_ip not in allowed_ips:
-        print(f"Unauthorized access from IP: {client_ip}")
-        return 'Forbidden', 403
+    # Temporarily allow all IPs for debugging
+    # allowed_ips = [
+    #     '52.89.214.238',
+    #     '34.212.75.30',
+    #     '54.218.53.128',
+    #     '52.32.178.7',
+    #     '223.19.58.131',
+    #     'YOUR_WEBHOOK_SOURCE_IP' # <-- 將此替換為你的 webhook 來源 IP 地址
+    # ]
+    # client_ip = request.remote_addr
+    # if client_ip not in allowed_ips:
+    #     print(f"Unauthorized access from IP: {client_ip}")
+    #     return 'Forbidden', 403
 
     global message_history
     received_data = ""
