@@ -1,12 +1,11 @@
 import os
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO, emit
-import eventlet
-eventlet.monkey_patch()
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key_if_not_set') # Change this to a strong secret key
-socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins=['https://wavehook.pythonanywhere.com', 'http://127.0.0.1:5000'])
+socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins=['https://wavehook.pythonanywhere.com', 'http://127.0.0.1:5000'])
 
 message_history = [] # Initialize with an empty list to store all messages
 
