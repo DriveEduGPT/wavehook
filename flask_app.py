@@ -4,7 +4,7 @@ from flask_socketio import SocketIO, emit
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key_if_not_set') # Change this to a strong secret key
+app.config['SECRET_KEY'] = 'YOUR_ACTUAL_STRONG_SECRET_KEY_HERE' # Directly set SECRET_KEY here for PythonAnywhere async deployment
 socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins=['https://wavehook.pythonanywhere.com', 'http://127.0.0.1:5000'])
 
 message_history = [] # Initialize with an empty list to store all messages
