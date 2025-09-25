@@ -1,23 +1,61 @@
-from flask import Flask, request, jsonify
+import os
+from flask import Flask, request, render_template
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key_if_not_set') # Change this to a strong secret key
+socketio = SocketIO(app, async_mode='gevent')
 
-last_webhook_data = {} # Initialize with an empty dictionary
+message_history = [] # Initialize with an empty list to store all messages
 
 @app.route('/')
 def home():
-    if last_webhook_data:
-        return jsonify(last_webhook_data)
-    return 'No webhook data received yet.'
+    return render_template('index.html', messages=message_history)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    global last_webhook_data
-    last_webhook_data = request.json
-    print(last_webhook_data)
-    return jsonify(last_webhook_data)
+    allowed_ips = [
+        '52.89.214.238',
+        '34.212.75.30',
+        '54.218.53.128',
+        '52.32.178.7',
+        '223.19.58.131'
+    ]
+    client_ip = request.remote_addr
+    if client_ip not in allowed_ips:
+        print(f"Unauthorized access from IP: {client_ip}")
+        return 'Forbidden', 403
+
+    global message_history
+    received_data = ""
+
+    if request.is_json:
+        received_data = request.json
+    elif request.data:
+        received_data = request.data.decode('utf-8') # Handle plain text or other data
+    elif request.form:
+        received_data = request.form.to_dict() # Handle form data
+    else:
+        received_data = "No discernible data received."
+
+    message_history.insert(0, received_data) # Add new message to the beginning of the list
+    print(f"Received webhook: {received_data}")
+    emit('new_message', received_data, broadcast=True, namespace='/')
+
+    return 'OK', 200
+
+@socketio.on('connect')
+def test_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False') == 'True'
+    # In development, SocketIO should handle debug mode for Flask itself
+    # The host and port will be handled by socketio.run()
+    socketio.run(app, debug=debug_mode, host='0.0.0.0', port=80)
 
 
