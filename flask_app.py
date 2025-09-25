@@ -17,6 +17,10 @@ def home():
 def webhook():
     # print(f"Received webhook from IP: {request.remote_addr}") # Remove temporary print statement
 
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if client_ip is None:
+        client_ip = 'Unknown' # Fallback if no IP is found
+
     # Temporarily allow all IPs for debugging
     # allowed_ips = [
     #     '52.89.214.238',
@@ -26,7 +30,6 @@ def webhook():
     #     '223.19.58.131',
     #     'YOUR_WEBHOOK_SOURCE_IP' # <-- 將此替換為你的 webhook 來源 IP 地址
     # ]
-    # client_ip = request.remote_addr
     # if client_ip not in allowed_ips:
     #     print(f"Unauthorized access from IP: {client_ip}")
     #     return 'Forbidden', 403
@@ -45,7 +48,7 @@ def webhook():
 
     # Store both IP and data in history
     message_entry = {
-        'ip': request.remote_addr,
+        'ip': client_ip,
         'data': received_data
     }
     message_history.insert(0, message_entry) # Add new message to the beginning of the list
