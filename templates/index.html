@@ -36,8 +36,9 @@
     <div id="status">Connecting...</div>
     <h2>Received Messages:</h2>
     <ul id="messages">
-        {% for message in messages %}
-            <li>{{ message | tojson }}</li> {# Display initial messages from history #}
+        {% for message_entry in messages %}
+            <li><strong>IP:</strong> {{ message_entry.ip }}<br>
+            <pre>{{ message_entry.data | tojson(indent=2) }}</pre></li>
         {% endfor %}
     </ul>
 
@@ -58,11 +59,20 @@
             console.log('New message received:', data);
             var ul = document.getElementById('messages');
             var li = document.createElement('li');
-            if (typeof data === 'object' && data !== null) {
-                li.textContent = JSON.stringify(data, null, 2); // Prettify JSON for display
+
+            var ipSpan = document.createElement('strong');
+            ipSpan.textContent = 'IP:';
+            li.appendChild(ipSpan);
+            li.appendChild(document.createTextNode(' ' + data.ip + '\n'));
+
+            var pre = document.createElement('pre');
+            if (typeof data.data === 'object' && data.data !== null) {
+                pre.textContent = JSON.stringify(data.data, null, 2); // Prettify JSON for display
             } else {
-                li.textContent = data; // Display plain text directly
+                pre.textContent = data.data; // Display plain text directly
             }
+            li.appendChild(pre);
+
             ul.prepend(li); // Add new message to the top
         });
 
@@ -70,9 +80,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             var initialMessages = document.getElementById('messages').children;
             for (var i = 0; i < initialMessages.length; i++) {
+                var li = initialMessages[i];
+                var ipText = li.querySelector('strong').nextSibling.textContent.trim();
+                var dataPre = li.querySelector('pre');
+
                 try {
-                    var parsedMessage = JSON.parse(initialMessages[i].textContent);
-                    initialMessages[i].textContent = JSON.stringify(parsedMessage, null, 2);
+                    var parsedData = JSON.parse(dataPre.textContent);
+                    dataPre.textContent = JSON.stringify(parsedData, null, 2);
                 } catch (e) {
                     // If parsing fails, it's already plain text
                 }

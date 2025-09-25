@@ -15,6 +15,8 @@ def home():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    # print(f"Received webhook from IP: {request.remote_addr}") # Remove temporary print statement
+
     # Temporarily allow all IPs for debugging
     # allowed_ips = [
     #     '52.89.214.238',
@@ -41,9 +43,14 @@ def webhook():
     else:
         received_data = "No discernible data received."
 
-    message_history.insert(0, received_data) # Add new message to the beginning of the list
+    # Store both IP and data in history
+    message_entry = {
+        'ip': request.remote_addr,
+        'data': received_data
+    }
+    message_history.insert(0, message_entry) # Add new message to the beginning of the list
     print(f"Received webhook: {received_data}")
-    emit('new_message', received_data, broadcast=True, namespace='/')
+    emit('new_message', message_entry, broadcast=True, namespace='/') # Emit the whole entry
 
     return 'OK', 200
 
