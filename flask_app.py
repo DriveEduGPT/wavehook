@@ -15,12 +15,21 @@ def home():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    print(f"Raw request.remote_addr: {request.remote_addr}") # Log raw remote_addr
+    print(f"Request Headers: {request.headers}") # Log all request headers
+
+    client_ip = request.headers.get('X-Real-IP')
+    if client_ip is None:
+        client_ip = request.headers.get('X-Forwarded-For')
+        if client_ip is not None:
+            # X-Forwarded-For can contain a comma-separated list of IPs
+            client_ip = client_ip.split(',')[0].strip()
+    if client_ip is None:
+        client_ip = request.remote_addr
     if client_ip is None:
         client_ip = 'Unknown' # Fallback if no IP is found
 
     print(f"Detected client IP: {client_ip}") # Temporarily log detected IP
-    # print(f"Request Headers: {request.headers}") # Remove temporary log for headers
 
     # Re-enable IP filtering
     allowed_ips = [
