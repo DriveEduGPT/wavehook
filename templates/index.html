@@ -22,12 +22,22 @@
             border-bottom: 1px solid #eee;
             word-wrap: break-word; /* Ensure long words wrap */
             white-space: pre-wrap; /* Preserve whitespace and breaks */
+            display: flex; /* Use flexbox for layout */
+            flex-direction: column; /* Stack children vertically */
         }
         #messages li:last-child {
             border-bottom: none;
         }
         #messages li:nth-child(even) {
             background-color: #f9f9f9;
+        }
+        .message-content {
+            max-height: 150px; /* Max height for scrollable content */
+            overflow-y: auto; /* Enable vertical scrolling */
+            border: 1px solid #eee; /* Light border for visual separation */
+            padding: 5px;
+            margin-top: 5px;
+            background-color: #fcfcfc;
         }
     </style>
 </head>
@@ -38,10 +48,8 @@
     <ul id="messages">
         {% for message_entry in messages %}
             <li><strong>IP:</strong> {{ message_entry.ip }}<br>
-            <strong>Headers:</strong>
-            <pre>{{ message_entry.headers | tojson(indent=2) }}</pre>
             <strong>Data:</strong>
-            <pre>{{ message_entry.data | tojson(indent=2) }}</pre></li>
+            <div class="message-content"><pre>{{ message_entry.data | tojson(indent=2) }}</pre></div></li>
         {% endfor %}
     </ul>
 
@@ -63,29 +71,25 @@
             var ul = document.getElementById('messages');
             var li = document.createElement('li');
 
-            var ipSpan = document.createElement('strong');
-            ipSpan.textContent = 'IP:';
-            li.appendChild(ipSpan);
+            var ipStrong = document.createElement('strong');
+            ipStrong.textContent = 'IP:';
+            li.appendChild(ipStrong);
             li.appendChild(document.createTextNode(' ' + data.ip + '\n'));
-
-            var headersStrong = document.createElement('strong');
-            headersStrong.textContent = 'Headers:';
-            li.appendChild(headersStrong);
-            var headersPre = document.createElement('pre');
-            headersPre.textContent = JSON.stringify(data.headers, null, 2);
-            li.appendChild(headersPre);
 
             var dataStrong = document.createElement('strong');
             dataStrong.textContent = 'Data:';
             li.appendChild(dataStrong);
 
+            var messageContentDiv = document.createElement('div');
+            messageContentDiv.className = 'message-content';
             var pre = document.createElement('pre');
             if (typeof data.data === 'object' && data.data !== null) {
                 pre.textContent = JSON.stringify(data.data, null, 2); // Prettify JSON for display
             } else {
                 pre.textContent = data.data; // Display plain text directly
             }
-            li.appendChild(pre);
+            messageContentDiv.appendChild(pre);
+            li.appendChild(messageContentDiv);
 
             ul.prepend(li); // Add new message to the top
         });
@@ -95,22 +99,11 @@
             var initialMessages = document.getElementById('messages').children;
             for (var i = 0; i < initialMessages.length; i++) {
                 var li = initialMessages[i];
-                // Re-parse and format data part
-                var dataPre = li.querySelector('pre:last-of-type');
+                var dataPre = li.querySelector('.message-content pre');
                 if (dataPre) {
                     try {
                         var parsedData = JSON.parse(dataPre.textContent);
                         dataPre.textContent = JSON.stringify(parsedData, null, 2);
-                    } catch (e) {
-                        // If parsing fails, it's already plain text
-                    }
-                }
-                // Re-parse and format headers part
-                var headersPre = li.querySelector('pre:first-of-type');
-                if (headersPre) {
-                    try {
-                        var parsedHeaders = JSON.parse(headersPre.textContent);
-                        headersPre.textContent = JSON.stringify(parsedHeaders, null, 2);
                     } catch (e) {
                         // If parsing fails, it's already plain text
                     }

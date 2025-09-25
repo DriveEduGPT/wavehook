@@ -15,9 +15,6 @@ def home():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    print(f"Raw request.remote_addr: {request.remote_addr}") # Log raw remote_addr
-    print(f"Request Headers: {request.headers}") # Log all request headers
-
     client_ip = request.headers.get('X-Real-IP')
     if client_ip is None:
         client_ip = request.headers.get('X-Forwarded-For')
@@ -29,15 +26,13 @@ def webhook():
     if client_ip is None:
         client_ip = 'Unknown' # Fallback if no IP is found
 
-    print(f"Detected client IP: {client_ip}") # Temporarily log detected IP
-
     # Re-enable IP filtering
     allowed_ips = [
         '52.89.214.238',
         '34.212.75.30',
         '54.218.53.128',
         '52.32.178.7',
-        '223.19.58.131' # Postman IP
+        '223.19.58.131' # Assuming this is the Postman IP
     ]
     if client_ip not in allowed_ips:
         print(f"Unauthorized access from IP: {client_ip}")
@@ -55,11 +50,11 @@ def webhook():
     else:
         received_data = "No discernible data received."
 
-    # Store both IP, data and headers in history
+    # Store both IP, data in history (remove headers)
     message_entry = {
         'ip': client_ip,
         'data': received_data,
-        'headers': dict(request.headers) # Convert headers to a dict for display
+        # 'headers': dict(request.headers) # Remove headers from storage
     }
     message_history.insert(0, message_entry) # Add new message to the beginning of the list
     print(f"Received webhook: {received_data}")
