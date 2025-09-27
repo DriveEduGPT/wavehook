@@ -1,7 +1,10 @@
 Flask==2.2.2
 Flask-SocketIO
 Werkzeug==2.2.2
-gevent==21.12.0
+gevent
 gevent-websocket
+Flask-SQLAlchemy
+PyMySQL
+cryptography
 
 

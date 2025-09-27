@@ -48,6 +48,7 @@
     <ul id="messages">
         {% for message_entry in messages %}
             <li><strong>IP:</strong> {{ message_entry.ip }}<br>
+            <strong>Time:</strong> {{ message_entry.timestamp }}<br>
             <strong>Data:</strong>
             <div class="message-content"><pre>{{ message_entry.data | tojson(indent=2) }}</pre></div></li>
         {% endfor %}
@@ -75,6 +76,11 @@
             ipStrong.textContent = 'IP:';
             li.appendChild(ipStrong);
             li.appendChild(document.createTextNode(' ' + data.ip + '\n'));
+
+            var timeStrong = document.createElement('strong');
+            timeStrong.textContent = 'Time:';
+            li.appendChild(timeStrong);
+            li.appendChild(document.createTextNode(' ' + data.timestamp + '\n'));
 
             var dataStrong = document.createElement('strong');
             dataStrong.textContent = 'Data:';
