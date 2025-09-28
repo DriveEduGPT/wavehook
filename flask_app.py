@@ -1,42 +1,18 @@
 import os
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO, emit
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_fallback_secret_key_here')
 
-# 設定資料庫 URI，必須從環境變數獲取
-database_url = os.environ.get('DATABASE_URL')
-if not database_url:
-    raise RuntimeError("DATABASE_URL environment variable is not set. Please set it for database connection.")
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
 socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins=['https://wavehook.pythonanywhere.com', 'http://127.0.0.1:5000'])
-
-# Define a database model to store webhook messages
-class WebhookLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(45))
-    data = db.Column(db.JSON) # Use JSON type for flexible data storage
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<WebhookLog {self.id} from {self.ip_address}>'
 
 @app.route('/')
 def home():
     # Fetch latest 100 messages from the database
-    latest_messages = WebhookLog.query.order_by(WebhookLog.timestamp.desc()).limit(100).all()
-    # Convert to a format suitable for the template (e.g., list of dicts)
-    messages_for_template = [
-        {'ip': msg.ip_address, 'data': msg.data, 'timestamp': msg.timestamp.isoformat()}
-        for msg in latest_messages
-    ]
+    latest_messages = [] # Placeholder for no database
+    messages_for_template = []
     return render_template('index.html', messages=messages_for_template)
 
 @app.route('/webhook', methods=['POST'])
@@ -73,7 +49,6 @@ def webhook():
                 or request.remote_addr \
                 or 'Unknown'
 
-    global message_history # This line is actually removed now with DB integration
     received_data = ""
     if request.is_json:
         received_data = request.json
@@ -83,11 +58,6 @@ def webhook():
         received_data = request.form.to_dict()
     else:
         received_data = "No discernible data received."
-
-    # Store webhook in the database
-    new_log = WebhookLog(ip_address=client_ip, data=received_data)
-    db.session.add(new_log)
-    db.session.commit()
 
     # Emit the newly saved log entry to all connected clients
     emit('new_message', {
@@ -106,13 +76,9 @@ def test_connect():
 def test_disconnect():
     print('Client disconnected')
 
-# Create database tables within the application context
-with app.app_context():
-    db.create_all()
-
 if __name__ == '__main__':
-    import gevent
-    gevent.monkey_patch()
+    from gevent import monkey
+    monkey.patch_all()
 
     # socketio 已在全局作用域初始化
     # socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins=['https://wavehook.pythonanywhere.com', 'http://127.0.0.1:5000'])
